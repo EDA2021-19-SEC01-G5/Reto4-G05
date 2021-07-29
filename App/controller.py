@@ -20,6 +20,7 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
+from math import cos
 import config as cf
 import model
 import csv
@@ -48,10 +49,21 @@ def cargarCatalogo(catalog):
         model.cargarLandingPoints(catalog,landing)
     for connection in connections:
         model.cargarConnections(catalog, connection)
+    model.agregarRutasLanding(catalog)
     
 
-# Funciones para la carga de datos
+# requerimiento 1
+def requerimiento1(catalog, landing1, landing2):
+    numero_conectados, estan_conectados = model.requerimiento1(catalog, landing1, landing2)
+    return numero_conectados, estan_conectados
 
-# Funciones de ordenamiento
 
-# Funciones de consulta sobre el catálogo
+#requerimiento 2
+def requerimiento2(catalog, pais1, pais2):
+    camino, costo_total = model.requerimiento2(catalog, pais1, pais2)
+    return camino, costo_total
+
+
+#requerimiento 3
+def requerimiento3(catalog):
+    return model.requerimiento3(catalog)

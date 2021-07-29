@@ -27,7 +27,9 @@ from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.ADT import graph as gr
 assert cf
+import threading
 
+from DISClib.ADT import stack
 
 """
 La vista se encarga de la interacción con el usuario
@@ -70,26 +72,71 @@ def mostrarDatosCarga(catalog):
     print('El ultimo pais cargado es: \n', ultimo_pais)
 
 
+def requerimiento1(catalog, landing1, landing2):
+    numero_conectados, estan_conectados = controller.requerimiento1(catalog, landing1, landing2)
+    print('El numero total de clusters en la red es de ', numero_conectados)
+    if estan_conectados == True:
+        res = 'Los dos landing points estan en el mismo cluster'
+    else:
+        res = 'Los dos landing points no estan en el mismo cluster'
+    print(res)
 
 
+
+
+def requerimiento2(catalog, pais1, pais2):
+    camino, costo_total = controller.requerimiento2(catalog, pais1, pais2)
+    print('La distancia total de la ruta es de: ', costo_total, 'km')
+    tamano = stack.size(camino)
+    for i in range(tamano):
+        elemento = stack.pop(camino)
+        print('Ruta de ',elemento['vertexA'], ' a ', elemento['vertexB'], ' con distancia de ', elemento['weight'])
+
+
+
+
+def requerimiento3(catalog):
+    vertices = controller.requerimiento3(catalog)
+    arcos = mp.valueSet(vertices)
+    tamano = lt.size(arcos)
+    for i in range(1, tamano+1):
+        print(lt.getElement(arcos,i))
+    print(tamano)
 
 
 """
 Menu principal
 """
-while True:
-    printMenu()
-    inputs = input('Seleccione una opción para continuar\n')
-    if int(inputs[0]) == 1:
-        print("Inicializando catalogo ....")
-        catalog = crearCatalogo()
-        print('Catalogo creado.')
-    elif int(inputs[0]) == 2:
-        print("Cargando catalogo ...")
-        cargarCatalogo(catalog)
-        mostrarDatosCarga(catalog)
-        
+def thread_cycle():
+    while True:
+        printMenu()
+        inputs = input('Seleccione una opción para continuar\n')
+        if int(inputs[0]) == 1:
+            print("Inicializando catalogo ....")
+            catalog = crearCatalogo()
+            print('Catalogo creado.')
+        elif int(inputs[0]) == 2:
+            print("Cargando catalogo ...")
+            cargarCatalogo(catalog)
+            mostrarDatosCarga(catalog)
+        elif int(inputs[0]) == 3:
+            landing1 = input('Ingrese el nombre del primer landing point: ')
+            landing2 = input('Ingrese el nombre del segundo landing point: ')
+            requerimiento1(catalog, landing1, landing2)
+        elif int(inputs[0]) == 4:
+            pais1 = input('Ingrese el primer pais: ')
+            pais2 = input('Ingrese el segundo pais: ')
+            requerimiento2(catalog, pais1, pais2)
+        elif int(inputs[0]) == 5:
+            requerimiento3(catalog)
+        else:
+            sys.exit(0)
+#sys.exit(0)
 
-    else:
-        sys.exit(0)
-sys.exit(0)
+
+
+if __name__ == "__main__":
+    threading.stack_size(67108864)  # 64MB stack
+    sys.setrecursionlimit(2 ** 20)
+    thread = threading.Thread(target=thread_cycle)
+    thread.start()
