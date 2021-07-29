@@ -40,6 +40,9 @@ from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.Algorithms.Graphs import prim
 
+
+from DISClib.ADT import queue
+
 #importacion modulo para usar la funcion haversine
 import haversine as hs
 
@@ -144,9 +147,16 @@ def agregarRutasLanding(catalog):
     lista_landings =  mp.keySet(catalog['landing_points'])
     for key in lt.iterator(lista_landings):
         nombre = mp.get(catalog['landing_points'], key)['value']['datos']['name'].lower()
+        latitud_landing = float(mp.get(catalog['landing_points'], key)['value']['datos']['latitude'])
+        longitude_landing = float(mp.get(catalog['landing_points'], key)['value']['datos']['longitude'])
+        loc_landing = (latitud_landing, longitude_landing)
         lista_nombre = nombre.split(', ')
         pais = lista_nombre[-1].lower()
         capital = mp.get(catalog['countries'], pais)['value']['CapitalName'].lower()
+        latitud_capital = float( mp.get(catalog['countries'], pais)['value']['CapitalLatitude'])
+        longitude_capital = float( mp.get(catalog['countries'], pais)['value']['CapitalLongitude'])
+        loc_capital = (latitud_capital, longitude_capital)
+        costo_capital = hs.haversine(loc_landing, loc_capital)
         vertice_capital = capital
         agregarvertice(catalog, vertice_capital)
         lista_rutas = mp.get(catalog['landing_points'], key)['value']['rutas']
@@ -154,8 +164,8 @@ def agregarRutasLanding(catalog):
         for landing in lt.iterator(lista_rutas):
             actual = landing
             if actual != anterior:
-                agregarRuta(catalog, actual, vertice_capital, 0)
-                agregarRuta(catalog, vertice_capital, actual, 0)
+                agregarRuta(catalog, actual, vertice_capital, costo_capital)
+                agregarRuta(catalog, vertice_capital, actual, costo_capital)
                 if anterior is not None:
                     agregarRuta(catalog,anterior, actual, 0.1)
                     agregarRuta(catalog,actual, anterior, 0.1)
@@ -192,11 +202,51 @@ def requerimiento2(catalog, pais1, pais2):
 def requerimiento3(catalog):
     encontrado = prim.PrimMST(catalog['connections'])
     vertices = encontrado['marked']
-    valores = encontrado['distTo']
     total_vertices = mp.size(vertices)
-    lista_costos = mp.valueSet(valores)
-    costo_total = 0
-    for i in range(1, lt.size(lista_costos)+1):
-        costo_total += lt.getElement(lista_costos, i)
-    return total_vertices, costo_total
+
+    costo_total = prim.weightMST(catalog['connections'],encontrado)
+    
+    conexiones = encontrado['edgeTo']
+    source = lt.firstElement(gr.vertices(catalog['connections']))
+
+    ruta_larga, tamano_ruta_larga = encontrarRama(conexiones, source)
+
+
+    return total_vertices, costo_total, ruta_larga, tamano_ruta_larga
+
+def encontrarRama(conexiones, source ):
+    vertices = mp.keySet(conexiones)
+    nueva_graph = gr.newGraph(directed = True, size = lt.size(vertices))
+    for vertice in lt.iterator(vertices):
+        info = mp.get(conexiones, vertice)['value']
+        origen = info['vertexA']
+        destino = info['vertexB']
+        costo = info['weight']
+        if not gr.containsVertex(nueva_graph, origen):
+            gr.insertVertex(nueva_graph, origen)
+        if not gr.containsVertex(nueva_graph, destino):
+            gr.insertVertex(nueva_graph, destino)
+        gr.addEdge(nueva_graph,origen, destino, costo )
+        '''
+    for vertice in lt.iterator(vertices):
+        info = mp.get(conexiones, vertice)['value']
+        origen = info['vertexA']
+        destino = info['vertexB']
+        costo = info['weight']
+        gr.addEdge(nueva_graph,origen, destino, costo )
+        '''
+    rutas = djk.Dijkstra(nueva_graph, source)
+    mejor_ruta = None
+    tamano_mejor_ruta = 0
+    for vertice in lt.iterator(vertices):
+        if vertice != source:
+            camino = djk.pathTo(rutas, vertice)
+            if camino != None:
+                longitud = stack.size(camino)
+                if longitud > tamano_mejor_ruta:
+                    tamano_mejor_ruta = longitud
+                    mejor_ruta = camino
+    return mejor_ruta, tamano_mejor_ruta
+
+
 

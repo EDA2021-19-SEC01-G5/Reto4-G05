@@ -20,6 +20,7 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
+from io import SEEK_SET
 from math import cos
 import config as cf
 import sys
@@ -31,7 +32,7 @@ assert cf
 import threading
 
 from DISClib.ADT import stack
-
+from DISClib.ADT import queue
 """
 La vista se encarga de la interacción con el usuario
 Presenta el menu de opciones y por cada seleccion
@@ -74,32 +75,47 @@ def mostrarDatosCarga(catalog):
 
 
 def requerimiento1(catalog, landing1, landing2):
-    numero_conectados, estan_conectados = controller.requerimiento1(catalog, landing1, landing2)
+    numero_conectados, estan_conectados, delta_time, delta_memory = controller.requerimiento1(catalog, landing1, landing2)
     print('El numero total de clusters en la red es de ', numero_conectados)
     if estan_conectados == True:
         res = 'Los dos landing points estan en el mismo cluster'
     else:
         res = 'Los dos landing points no estan en el mismo cluster'
     print(res)
+    print("Tiempo [ms]: ", f"{delta_time}", "  ||  ",
+            "Memoria [kB]: ", f"{delta_memory}")
+
 
 
 
 
 def requerimiento2(catalog, pais1, pais2):
-    camino, costo_total = controller.requerimiento2(catalog, pais1, pais2)
+    camino, costo_total, delta_time, delta_memory = controller.requerimiento2(catalog, pais1, pais2)
     print('La distancia total de la ruta es de: ', costo_total, 'km')
     tamano = stack.size(camino)
     for i in range(tamano):
         elemento = stack.pop(camino)
         print('Ruta de ',elemento['vertexA'], ' a ', elemento['vertexB'], ' con distancia de ', elemento['weight'], 'km')
+    print("Tiempo [ms]: ", f"{delta_time}", "  ||  ",
+            "Memoria [kB]: ", f"{delta_memory}")
+
 
 
 
 
 def requerimiento3(catalog):
-    total_vertices, costo_total = controller.requerimiento3(catalog)
+    total_vertices, costo_total,  ruta_larga, tamano_ruta_larga, delta_time, delta_memory= controller.requerimiento3(catalog)
     print('\nLa cantidad de vertices conectados a la red de expresion minima es de: ', total_vertices)
     print('El costo total en km de la red de expancion minima es de: ', costo_total)
+    elementos = stack.size(ruta_larga)
+    print("La rama mas larga para la red de expanción minima tiene ", tamano_ruta_larga, "arcos")
+    print("\nAhora se muestra la secuencia de arcos de este camino:")
+    for i in range(1, elementos):
+        vertice = stack.pop(ruta_larga)
+        print('Desde: ',vertice['vertexA'], ' || hasta: ', vertice['vertexB'])
+    print("Tiempo [ms]: ", f"{delta_time}", "  ||  ",
+            "Memoria [kB]: ", f"{delta_memory}")
+
 
 
 """
@@ -122,8 +138,8 @@ def thread_cycle():
             landing2 = input('Ingrese el nombre del segundo landing point: ')
             requerimiento1(catalog, landing1, landing2)
         elif int(inputs[0]) == 4:
-            pais1 = input('Ingrese el primer pais: ')
-            pais2 = input('Ingrese el segundo pais: ')
+            pais1 = input('Ingrese el primer pais: ').rstrip()
+            pais2 = input('Ingrese el segundo pais: ').rstrip()
             requerimiento2(catalog, pais1, pais2)
         elif int(inputs[0]) == 5:
             requerimiento3(catalog)
