@@ -28,8 +28,27 @@ import csv
 """
 El controlador se encarga de mediar entre la vista y el modelo.
 """
+# Inicializacion
 
-# Inicialización del Catálogo de libros
+def crearCatalogo():
+    return model.crearCatalogo()
+
+
+
+def cargarCatalogo(catalog):
+    archivo_paises = cf.data_dir + 'countries.csv'
+    archivo_connections = cf.data_dir + 'connections.csv'
+    archivo_landing = cf.data_dir + 'landing_points.csv'
+    paises = csv.DictReader(open(archivo_paises, encoding="utf-8"),delimiter=",")
+    connections = csv.DictReader(open(archivo_connections, encoding='utf-8-sig'),delimiter=",")
+    landing_points = csv.DictReader(open(archivo_landing, encoding="utf-8"),delimiter=",")
+    for country in paises:
+        model.cargarCountries(catalog, country)
+    for landing in landing_points:
+        model.cargarLandingPoints(catalog,landing)
+    for connection in connections:
+        model.cargarConnections(catalog, connection)
+    
 
 # Funciones para la carga de datos
 
