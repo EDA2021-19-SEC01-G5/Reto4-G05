@@ -20,6 +20,7 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
+from math import cos
 import config as cf
 import sys
 import controller
@@ -90,18 +91,15 @@ def requerimiento2(catalog, pais1, pais2):
     tamano = stack.size(camino)
     for i in range(tamano):
         elemento = stack.pop(camino)
-        print('Ruta de ',elemento['vertexA'], ' a ', elemento['vertexB'], ' con distancia de ', elemento['weight'])
+        print('Ruta de ',elemento['vertexA'], ' a ', elemento['vertexB'], ' con distancia de ', elemento['weight'], 'km')
 
 
 
 
 def requerimiento3(catalog):
-    vertices = controller.requerimiento3(catalog)
-    arcos = mp.valueSet(vertices)
-    tamano = lt.size(arcos)
-    for i in range(1, tamano+1):
-        print(lt.getElement(arcos,i))
-    print(tamano)
+    total_vertices, costo_total = controller.requerimiento3(catalog)
+    print('\nLa cantidad de vertices conectados a la red de expresion minima es de: ', total_vertices)
+    print('El costo total en km de la red de expancion minima es de: ', costo_total)
 
 
 """

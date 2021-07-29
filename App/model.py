@@ -191,5 +191,12 @@ def requerimiento2(catalog, pais1, pais2):
 # requerimiento 3
 def requerimiento3(catalog):
     encontrado = prim.PrimMST(catalog['connections'])
-    vertices = encontrado['edgeTo']
-    return vertices
+    vertices = encontrado['marked']
+    valores = encontrado['distTo']
+    total_vertices = mp.size(vertices)
+    lista_costos = mp.valueSet(valores)
+    costo_total = 0
+    for i in range(1, lt.size(lista_costos)+1):
+        costo_total += lt.getElement(lista_costos, i)
+    return total_vertices, costo_total
+
